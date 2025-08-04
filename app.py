@@ -79,7 +79,7 @@ def afficher_packs(packs, titre):
           #f"/content/{image_name}"
             #st.image("Fêtes de naissance ou baby showers.png", use_container_width=True)
 
-            st.image(row.get("image_url", ""), use_container_width=True, caption=row["nom_pack"])
+            st.image(row.get("image_url", "Fiançailles.png"), use_container_width=True, caption=row["nom_pack"])
 
             st.markdown(f"**{row['nom_pack']}**")
             st.markdown(f"**Type :** {row['type']}")
