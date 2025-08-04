@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from lightfm import LightFM
-from lightfm.data import Dataset as LightFMDataset
-from lightfm.evaluation import precision_at_k, recall_at_k, auc_score, reciprocal_rank
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import nltk
@@ -56,26 +53,8 @@ tfidf_packs = vectorizer_packs.fit_transform(products["content"])
 interaction_types = ['purchase', 'view', 'add_to_cart', 'favorite']
 interactions_filtered = interactions[interactions['type_interaction'].isin(interaction_types)]
 
-# --- Création du dataset LightFM ---
-lightfm_dataset = LightFMDataset()
-lightfm_dataset.fit(users['user_id'], products['pack_id'])
-(interactions_matrix, weights) = lightfm_dataset.build_interactions(
-    [(row['user_id'], row['product_id']) for _, row in interactions_filtered.iterrows()]
-)
 
-# --- Entraînement du modèle LightFM ---
-model_lfm = LightFM(loss='warp-kos', no_components=64, learning_rate=0.05)
-model_lfm.fit(interactions_matrix, epochs=10, num_threads=2)
 
-# --- Fonction de recommandation ---
-def recommend_lightfm(user_id, top_n=5):
-    n_users, n_items = interactions_matrix.shape
-    user_map = {uid: i for i, uid in enumerate(users['user_id'])}
-    uid_idx = user_map.get(user_id)
-    scores = model_lfm.predict(uid_idx, np.arange(n_items))
-    #scores = model_lfm.predict(user_id - 1, np.arange(n_items))
-    top_items = np.argsort(-scores)[:top_n]
-    return products.loc[top_items, ['pack_id', 'nom_pack', 'type', 'prix_total','description']]
 # --- 🔥 Produits populaires ---
 def recommend_popular(top_n=5):
     top_packs = interactions_filtered['product_id'].value_counts().head(top_n).index
@@ -144,18 +123,8 @@ tab1, tab2, = st.tabs(["👤 Utilisateur", "📈 Admin"])
 with tab2:
     tab21, tab22 = st.tabs([ "📈 Admin", "🤖 Suggestions intelligentes"])
     with tab21:
-        prec = precision_at_k(model_lfm, interactions_matrix, k=5).mean()
-        rec = recall_at_k(model_lfm, interactions_matrix, k=5).mean()
-        auc = auc_score(model_lfm, interactions_matrix).mean()
-        rr = reciprocal_rank(model_lfm, interactions_matrix).mean()
+       
     
-        st.header("Interface admin")
-        st.markdown("### Évaluation du modèle")
-        st.metric("Precision@5", f"{prec:.4f}")
-        st.metric("Recall@5", f"{rec:.4f}")
-        st.metric("AUC", f"{auc:.4f}")
-        st.metric("Reciprocal Rank (MAP@5)", f"{rr:.4f}")
-
     # 📈 Interactions par type
         st.markdown("### 📈 Répartition des interactions")
         interaction_counts = interactions_filtered['type_interaction'].value_counts()
@@ -216,8 +185,7 @@ with tab1:
         else:
             st.warning("Aucun pack trouvé pour cette requête.")
 
-    recs = recommend_lightfm(user_id, top_n)
-    afficher_packs(recs, f"Recommandations pour l'utilisateur {user_id}")
+    
 
     recs_pop = recommend_popular(top_n)
     afficher_packs(recs_pop, "🔥 Packs les plus populaires")
