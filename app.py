@@ -137,30 +137,62 @@ if user_id not in st.session_state.vues_utilisateur:
     
 top_n = st.sidebar.slider("Nombre de recommandations", min_value=1, max_value=20, value=5)
 
-tab1, tab2, tab3 = st.tabs(["👤 Utilisateur", "📈 Admin", "🤖 Suggestions intelligentes"])
+tab1, tab2, = st.tabs(["👤 Utilisateur", "📈 Admin"])
 
-with tab3:
-    st.header("Suggestions intelligentes basées sur la catégorie préférée")
+
+
+with tab2:
+    tab21, tab22 = st.tabs([ "📈 Admin", "🤖 Suggestions intelligentes"])
+    with tab21:
+        prec = precision_at_k(model_lfm, interactions_matrix, k=5).mean()
+        rec = recall_at_k(model_lfm, interactions_matrix, k=5).mean()
+        auc = auc_score(model_lfm, interactions_matrix).mean()
+        rr = reciprocal_rank(model_lfm, interactions_matrix).mean()
+    
+        st.header("Interface admin")
+        st.markdown("### Évaluation du modèle")
+        st.metric("Precision@5", f"{prec:.4f}")
+        st.metric("Recall@5", f"{rec:.4f}")
+        st.metric("AUC", f"{auc:.4f}")
+        st.metric("Reciprocal Rank (MAP@5)", f"{rr:.4f}")
+
+    # 📈 Interactions par type
+        st.markdown("### 📈 Répartition des interactions")
+        interaction_counts = interactions_filtered['type_interaction'].value_counts()
+        st.bar_chart(interaction_counts)
+
+    # 👤 Utilisateurs les plus actifs
+        st.markdown("### 👥 Utilisateurs les plus actifs")
+        top_users = interactions_filtered['user_id'].value_counts().head(5)
+        st.table(top_users)
+        # 🎨 Affichage de la heatmap
+        st.subheader("🔗 Corrélation entre les catégories de packs consultés")
+        plt.figure(figsize=(10, 6))
+        sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f")
+        st.pyplot(plt)
+    with tab22:
+        st.header("Suggestions intelligentes basées sur la catégorie préférée")
     # Filtrer interactions utilisateur
-    df_user = df[df['user_id'] == user_id]
+        df_user = df[df['user_id'] == user_id]
 
-    if df_user.empty:
-        st.warning("Aucune interaction trouvée pour cet utilisateur.")
-    else:
+        if df_user.empty:
+            st.warning("Aucune interaction trouvée pour cet utilisateur.")
+        else:
         # Catégorie préférée selon interactions
-        categorie_preferee = df_user['categorie'].value_counts().idxmax()
-        st.markdown(f"🎯 Catégorie préférée de l'utilisateur **{user_id}** : `{categorie_preferee}`")
+            categorie_preferee = df_user['categorie'].value_counts().idxmax()
+            st.markdown(f"🎯 Catégorie préférée de l'utilisateur **{user_id}** : `{categorie_preferee}`")
 
         # Recommandation de catégories corrélées
-        categories_suggérées = recommander_categories_corrélés(categorie_preferee, correlation_matrix)
+            categories_suggérées = recommander_categories_corrélés(categorie_preferee, correlation_matrix)
 
-        st.markdown("## 🧠 Catégories similaires recommandées :")
-        for cat in categories_suggérées:
-            st.markdown(f"- {cat}")
+            st.markdown("## 🧠 Catégories similaires recommandées :")
+            for cat in categories_suggérées:
+                st.markdown(f"- {cat}")
 
         # Afficher les packs liés
-        packs_suggérés = products[products['categorie'].isin(categories_suggérées)]
-        afficher_packs(packs_suggérés, f"🎁 Packs similaires à la catégorie préférée de {user_id}")
+            packs_suggérés = products[products['categorie'].isin(categories_suggérées)]
+            afficher_packs(packs_suggérés, f"🎁 Packs similaires à la catégorie préférée de {user_id}")
+
 
 with tab1:
     st.header("Interface utilisateur")
@@ -200,32 +232,4 @@ with tab1:
       afficher_packs(historique_df, "Historique personnalisé")
 
     afficher_packs(packs_suggérés, f"🎁 Packs similaires à la catégorie préférée de {user_id} : `{categorie_preferee}`")
-    prec = precision_at_k(model_lfm, interactions_matrix, k=5).mean()
-    rec = recall_at_k(model_lfm, interactions_matrix, k=5).mean()
-    auc = auc_score(model_lfm, interactions_matrix).mean()
-    rr = reciprocal_rank(model_lfm, interactions_matrix).mean()
-    
-
-
-with tab2:
-    st.header("Interface admin")
-    st.markdown("### Évaluation du modèle")
-    st.metric("Precision@5", f"{prec:.4f}")
-    st.metric("Recall@5", f"{rec:.4f}")
-    st.metric("AUC", f"{auc:.4f}")
-    st.metric("Reciprocal Rank (MAP@5)", f"{rr:.4f}")
-
-    # 📈 Interactions par type
-    st.markdown("### 📈 Répartition des interactions")
-    interaction_counts = interactions_filtered['type_interaction'].value_counts()
-    st.bar_chart(interaction_counts)
-
-    # 👤 Utilisateurs les plus actifs
-    st.markdown("### 👥 Utilisateurs les plus actifs")
-    top_users = interactions_filtered['user_id'].value_counts().head(5)
-    st.table(top_users)
-    # 🎨 Affichage de la heatmap
-    st.subheader("🔗 Corrélation entre les catégories de packs consultés")
-    plt.figure(figsize=(10, 6))
-    sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f")
-    st.pyplot(plt)
+   
