@@ -1,7 +1,7 @@
 streamlit
 pandas
 numpy
-lightfm==1.16 
+lightfm==1.17
 scikit-learn
 nltk
 seaborn
