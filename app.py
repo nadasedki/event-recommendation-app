@@ -57,7 +57,7 @@ interactions_filtered = interactions[interactions['type_interaction'].isin(inter
 # --- 🔥 Produits populaires ---
 def recommend_popular(top_n=5):
     top_packs = interactions_filtered['product_id'].value_counts().head(top_n).index
-    return products[products['pack_id'].isin(top_packs)][['pack_id', 'nom_pack', 'type', 'prix_total', 'description']]
+    return products[products['pack_id'].isin(top_packs)][['pack_id','image_url' ,'nom_pack', 'type', 'prix_total', 'description']]
 #contet-based
 def rechercher(requete, data, tfidf_matrix, top_n=1):
     vecteur = vectorizer_packs.transform([requete]) 
