@@ -179,6 +179,7 @@ with tab1:
             premier_pack_id = result_packs.iloc[0]['pack_id']
             if premier_pack_id not in st.session_state.vues_utilisateur[user_id]:
                 st.session_state.vues_utilisateur[user_id].append(premier_pack_id)
+                categorie_preferee =result_packs.iloc[0]['categorie']  # Mettre à jour la catégorie préférée
 
             afficher_packs(result_packs, f"📦 Packs suggérés")
         else:
@@ -191,10 +192,10 @@ with tab1:
     
     packs_interacted_by_user = get_packs_interacted_by_user(user_id, interactions, products)
     #if st.session_state.vues_utilisateur[user_id] or not packs_interacted_by_user.empty :
-    if st.session_state.vues_utilisateur[user_id] or not packs_interacted_by_user.empty:
+    if st.session_state.vues_utilisateur[user_id] :
       st.markdown("### 👁️ Packs consultés + vus récemment")
       historique_df = products[products["pack_id"].isin(st.session_state.vues_utilisateur[user_id])]
-      packs_concat = pd.concat([historique_df, packs_interacted_by_user]).drop_duplicates(subset='pack_id')
+      #packs_concat = pd.concat([historique_df, packs_interacted_by_user]).drop_duplicates(subset='pack_id')
 
       afficher_packs(historique_df, "Historique personnalisé")
 
