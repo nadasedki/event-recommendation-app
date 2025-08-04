@@ -179,7 +179,7 @@ with tab1:
             premier_pack_id = result_packs.iloc[0]['pack_id']
             if premier_pack_id not in st.session_state.vues_utilisateur[user_id]:
                 st.session_state.vues_utilisateur[user_id].append(premier_pack_id)
-                categorie_preferee =result_packs.iloc[0]['categorie']  # Mettre à jour la catégorie préférée
+                categorie_preferee1 =result_packs.iloc[0]['categorie']  # Mettre à jour la catégorie préférée
 
             afficher_packs(result_packs, f"📦 Packs suggérés")
         else:
@@ -198,6 +198,6 @@ with tab1:
       #packs_concat = pd.concat([historique_df, packs_interacted_by_user]).drop_duplicates(subset='pack_id')
 
       afficher_packs(historique_df, "Historique personnalisé")
-
-    afficher_packs(packs_suggérés, f"🎁 Packs similaires à la catégorie préférée de {user_id} : `{categorie_preferee}`")
+    if categorie_preferee1:
+        afficher_packs(packs_suggérés, f"🎁 Packs similaires à la catégorie  : `{categorie_preferee1}`")
    
