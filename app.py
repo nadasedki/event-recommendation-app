@@ -112,7 +112,7 @@ on_change=reset_requete)
 if user_id not in st.session_state.vues_utilisateur:
     st.session_state.vues_utilisateur[user_id] = []  # Liste vide pour ce user
 
-    
+categorie_preferee1= None    
 top_n = st.sidebar.slider("Nombre de recommandations", min_value=1, max_value=20, value=5)
 
 tab1, tab2, = st.tabs(["👤 Utilisateur", "📈 Admin"])
@@ -173,7 +173,7 @@ with tab1:
     requete = st.text_input("Entrez vos préférences ou mots-clés :", key="requete_text")
 
     if requete.strip():  # Vérifie que la requête n'est pas vide ou que des espaces
-        result_packs = rechercher(requete, products, tfidf_packs, top_n=5)
+        result_packs = rechercher(requete, products, tfidf_packs, top_n=1)
         if not result_packs.empty:
             # 👉 Ajouter seulement le premier pack dans les vues
             premier_pack_id = result_packs.iloc[0]['pack_id']
